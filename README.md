@@ -1,3 +1,14 @@
+## Tested Environments
+
+The plugin has been tested on the following platform:
+
+- **Operating System:** Red Hat Enterprise Linux 10
+- **Monitoring System:** Zabbix Agent 2 – 8.0 LTS
+- **Architecture:** Linux x86_64 (AMD64)
+- **Cluster Software:** Pacemaker / Corosync
+
+Other Linux distributions and architectures may work but have not been verified.
+
 ## Installation
 
 ### 1. Copy the 'zabbix-agent2-plugin-pacemaker' to Zabbix Agent 2 directory

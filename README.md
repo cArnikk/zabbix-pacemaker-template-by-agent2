@@ -140,3 +140,6 @@ zabbix_agent2 -t 'pacemaker.resource.last_operation_time[<resource_name>]'
 ```
 
 If all commands return valid results, the Pacemaker plugin is installed and ready to be monitored through Zabbix Agent 2.
+
+<img width="3228" height="1035" alt="obraz" src="https://github.com/user-attachments/assets/904f8395-7536-45ac-ab9d-ba9cc9f43799" />
+

@@ -1,0 +1,619 @@
+{
+    "zabbix_export": {
+        "version": "8.0",
+        "template_groups": [
+            {
+                "uuid": "7df96b18c230490a9a0a9e2307226338",
+                "name": "Templates"
+            }
+        ],
+        "templates": [
+            {
+                "uuid": "8a4fc2271093496e92508d2378e43eea",
+                "template": "Pacemaker by Zabbix Agent2",
+                "name": "Pacemaker by Zabbix Agent2",
+                "description": "https://github.com/cArnikk/zabbix-pacemaker/tree/main",
+                "groups": [
+                    {
+                        "name": "Templates"
+                    }
+                ],
+                "items": [
+                    {
+                        "uuid": "71c1c6fff70f43dbb163c22e9357e07e",
+                        "name": "Pacemaker: Designated Controller",
+                        "key": "pacemaker.dc",
+                        "value_type": "CHAR",
+                        "description": "Returns the hostname of the current Pacemaker Designated Controller (DC).\n\nThe DC is responsible for coordinating cluster management decisions.\n\nThe returned value is the hostname of the node currently acting as DC.",
+                        "valuemap": {
+                            "name": "pacemaker.availability"
+                        },
+                        "preprocessing": [
+                            {
+                                "type": "DISCARD_UNCHANGED_HEARTBEAT",
+                                "parameters": [
+                                    "1h"
+                                ]
+                            }
+                        ],
+                        "tags": [
+                            {
+                                "tag": "component",
+                                "value": "pacemaker"
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "7009634fbe0b4408b4470a00f6226958",
+                        "name": "Pacemaker: Failure count",
+                        "key": "pacemaker.failures",
+                        "description": "Returns the number of failure entries reported by crm_mon in the current cluster status XML.\n\n0 - No failure entries reported.\nGreater than 0 - Failure entries detected.\n\nThis metric counts XML failure elements and does not represent\nthe total number of failed resources or cumulative failcounts.",
+                        "preprocessing": [
+                            {
+                                "type": "DISCARD_UNCHANGED_HEARTBEAT",
+                                "parameters": [
+                                    "15m"
+                                ]
+                            }
+                        ],
+                        "tags": [
+                            {
+                                "tag": "component",
+                                "value": "pacemaker"
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "7b8e1c96853244aeaa5f0f9e562cf24b",
+                        "name": "Pacemaker: Cluster status",
+                        "key": "pacemaker.ping",
+                        "description": "Checks Pacemaker cluster availability by executing crm_mon.",
+                        "valuemap": {
+                            "name": "pacemaker.availability"
+                        },
+                        "preprocessing": [
+                            {
+                                "type": "CHECK_NOT_SUPPORTED",
+                                "parameters": [
+                                    "-1"
+                                ],
+                                "error_handler": "CUSTOM_VALUE",
+                                "error_handler_params": "0"
+                            },
+                            {
+                                "type": "DISCARD_UNCHANGED_HEARTBEAT",
+                                "parameters": [
+                                    "1h"
+                                ]
+                            }
+                        ],
+                        "tags": [
+                            {
+                                "tag": "component",
+                                "value": "pacemaker"
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "387164526fcc42f99b22b5723e35b712",
+                        "name": "Pacemaker: Cluster quorum",
+                        "key": "pacemaker.quorum",
+                        "description": "Reports whether the current Pacemaker cluster partition has quorum.\n\nReturns:\n1 - Cluster has quorum.\n0 - Cluster has no quorum.\n\nLoss of quorum may prevent cluster resources from starting or being managed.",
+                        "valuemap": {
+                            "name": "pacemaker.quorum"
+                        },
+                        "preprocessing": [
+                            {
+                                "type": "DISCARD_UNCHANGED_HEARTBEAT",
+                                "parameters": [
+                                    "1h"
+                                ]
+                            }
+                        ],
+                        "tags": [
+                            {
+                                "tag": "component",
+                                "value": "pacemaker"
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "6a85a06bf0744ae9986b917f53bbc35b",
+                        "name": "Pacemaker: Cluster configuration raw",
+                        "key": "pacemaker.raw",
+                        "delay": "5m",
+                        "history": "1h",
+                        "value_type": "TEXT",
+                        "description": "Returns the raw XML output generated by crm_mon.\n\nContains cluster status, node information, resource states,\nresource operations, failcounts and other diagnostic information.\n\nIntended for troubleshooting and investigation.\nNot intended for regular performance monitoring.",
+                        "preprocessing": [
+                            {
+                                "type": "DISCARD_UNCHANGED_HEARTBEAT",
+                                "parameters": [
+                                    "1h"
+                                ]
+                            }
+                        ],
+                        "tags": [
+                            {
+                                "tag": "component",
+                                "value": "pacemaker"
+                            },
+                            {
+                                "tag": "component",
+                                "value": "raw"
+                            }
+                        ]
+                    }
+                ],
+                "discovery_rules": [
+                    {
+                        "uuid": "86440650d34c42e7a29696838286b439",
+                        "name": "Pacemaker: Node discovery",
+                        "key": "pacemaker.node.discovery",
+                        "delay": "1h",
+                        "filter": {
+                            "evaltype": "AND",
+                            "conditions": [
+                                {
+                                    "macro": "{#PCMK_NODE}",
+                                    "value": "{$PACEMAKER.NODE.MATCHES}"
+                                },
+                                {
+                                    "macro": "{#PCMK_NODE}",
+                                    "value": "{$PACEMAKER.NODE.NOT_MATCHES}",
+                                    "operator": "NOT_MATCHES_REGEX"
+                                }
+                            ]
+                        },
+                        "description": "Discovers all nodes configured in the Pacemaker cluster.\n\nReturns node hostnames using the LLD macro {#PCMK_NODE}.\n\nNodes are discovered regardless of their current online/offline state.",
+                        "item_prototypes": [
+                            {
+                                "uuid": "f64429fca6fc48048638b018e55c84e2",
+                                "name": "Pacemaker: [{#PCMK_NODE}] Node is DC",
+                                "key": "pacemaker.node.is_dc[{#PCMK_NODE}]",
+                                "description": "Checks whether the discovered Pacemaker node is currently\nacting as the Designated Controller (DC).\n\nPossible values:\n0 - NO\n1 - YES\n\nThe Designated Controller coordinates cluster management and resource operation decisions.",
+                                "valuemap": {
+                                    "name": "pacemaker.dc.status"
+                                },
+                                "preprocessing": [
+                                    {
+                                        "type": "DISCARD_UNCHANGED_HEARTBEAT",
+                                        "parameters": [
+                                            "30m"
+                                        ]
+                                    }
+                                ],
+                                "tags": [
+                                    {
+                                        "tag": "component",
+                                        "value": "pacemaker"
+                                    },
+                                    {
+                                        "tag": "node",
+                                        "value": "{#PCMK_NODE}"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "f4cd93dcd63a4a23a68450922fc9afd7",
+                                "name": "Pacemaker: [{#PCMK_NODE}] Node state",
+                                "key": "pacemaker.node.state[{#PCMK_NODE}]",
+                                "description": "Returns the current operational state of the Pacemaker cluster node.\n\nPossible values:\n0 - OFFLINE\n1 - ONLINE\n2 - STANDBY\n3 - MAINTENANCE\n\nThe node state is determined from the Pacemaker cluster status XML.\n\nOFFLINE means the node is not reported as online by Pacemaker.\nSTANDBY means the node is online but excluded from resource placement.\nMAINTENANCE means the node is in maintenance mode.",
+                                "valuemap": {
+                                    "name": "pacemaker.node.status"
+                                },
+                                "preprocessing": [
+                                    {
+                                        "type": "DISCARD_UNCHANGED_HEARTBEAT",
+                                        "parameters": [
+                                            "30m"
+                                        ]
+                                    }
+                                ],
+                                "tags": [
+                                    {
+                                        "tag": "component",
+                                        "value": "pacemaker"
+                                    },
+                                    {
+                                        "tag": "node",
+                                        "value": "{#PCMK_NODE}"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "373627e1dab0479da754312a0b03cb1c",
+                        "name": "Pacemaker: Resource discovery",
+                        "key": "pacemaker.resource.discovery",
+                        "delay": "1h",
+                        "description": "Discovers all resources configured in the Pacemaker cluster.\n\nReturns resource identifiers and resource agents using LLD macros:\n{#PCMK_RESOURCE}\n{#PCMK_AGENT}\n\nResources are discovered regardless of their current operational state.",
+                        "item_prototypes": [
+                            {
+                                "uuid": "2a8d1a3832f643169a1b1e303e19bfc5",
+                                "name": "Pacemaker: [{#PCMK_RESOURCE}] Resource failed",
+                                "key": "pacemaker.resource.failed[{#PCMK_RESOURCE}]",
+                                "description": "Indicates whether Pacemaker reports the resource as failed.\n\nPossible values:\n0 - OK\n1 - FAILED\n\nBased on the failed attribute reported by crm_mon.",
+                                "valuemap": {
+                                    "name": "pacemaker.resource.failed"
+                                },
+                                "preprocessing": [
+                                    {
+                                        "type": "DISCARD_UNCHANGED_HEARTBEAT",
+                                        "parameters": [
+                                            "30m"
+                                        ]
+                                    }
+                                ],
+                                "tags": [
+                                    {
+                                        "tag": "component",
+                                        "value": "pacemaker"
+                                    },
+                                    {
+                                        "tag": "pacemaker resource",
+                                        "value": "{#PCMK_RESOURCE}"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "edd871cd73d64308897204145d28741d",
+                                "name": "Pacemaker: [{#PCMK_RESOURCE}] Resource last state change",
+                                "key": "pacemaker.resource.last_change[{#PCMK_RESOURCE}]",
+                                "units": "unixtime",
+                                "description": "Returns the Unix timestamp of the last successful state-changing resource operation.\n\nTracked operations:\nstart, stop, promote, demote, migrate_to, migrate_from.\n\nRecurring monitor operations do not update this timestamp.",
+                                "preprocessing": [
+                                    {
+                                        "type": "DISCARD_UNCHANGED_HEARTBEAT",
+                                        "parameters": [
+                                            "30m"
+                                        ]
+                                    }
+                                ],
+                                "tags": [
+                                    {
+                                        "tag": "component",
+                                        "value": "pacemaker"
+                                    },
+                                    {
+                                        "tag": "pacemaker resource",
+                                        "value": "{#PCMK_RESOURCE}"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "f557ffc843124bd4873109b3086fe98c",
+                                "name": "Pacemaker: [{#PCMK_RESOURCE}] Resource last state change age",
+                                "key": "pacemaker.resource.last_change_age[{#PCMK_RESOURCE}]",
+                                "units": "s",
+                                "description": "Returns the number of seconds elapsed since the last successful state changing resource operation.\n\nA value of 0 indicates that the timestamp is unavailable or that the recorded time is in the future.",
+                                "preprocessing": [
+                                    {
+                                        "type": "DISCARD_UNCHANGED_HEARTBEAT",
+                                        "parameters": [
+                                            "30m"
+                                        ]
+                                    }
+                                ],
+                                "tags": [
+                                    {
+                                        "tag": "component",
+                                        "value": "pacemaker"
+                                    },
+                                    {
+                                        "tag": "pacemaker resource",
+                                        "value": "{#PCMK_RESOURCE}"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "9fed38ec72404c1a824c4c1129ba90b5",
+                                "name": "Pacemaker: [{#PCMK_RESOURCE}] Resource last operation",
+                                "key": "pacemaker.resource.last_operation[{#PCMK_RESOURCE}]",
+                                "value_type": "CHAR",
+                                "description": "Returns the latest recorded Pacemaker resource operation.\n\nPossible values include:\nstart, stop, monitor, promote, demote, migrate_to, migrate_from.",
+                                "preprocessing": [
+                                    {
+                                        "type": "DISCARD_UNCHANGED_HEARTBEAT",
+                                        "parameters": [
+                                            "30m"
+                                        ]
+                                    }
+                                ],
+                                "tags": [
+                                    {
+                                        "tag": "component",
+                                        "value": "pacemaker"
+                                    },
+                                    {
+                                        "tag": "pacemaker resource",
+                                        "value": "{#PCMK_RESOURCE}"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "1afbba62a84b4dd38563ae4b97935904",
+                                "name": "Pacemaker: [{#PCMK_RESOURCE}] Resource last operation time",
+                                "key": "pacemaker.resource.last_operation_time[{#PCMK_RESOURCE}]",
+                                "units": "unixtime",
+                                "description": "Returns the Unix timestamp of the latest recorded resource operation based on Pacemaker operation history.\n\nNote that last-rc-change represents a change in the operation result code, not necessarily the actual execution time.",
+                                "preprocessing": [
+                                    {
+                                        "type": "DISCARD_UNCHANGED_HEARTBEAT",
+                                        "parameters": [
+                                            "30m"
+                                        ]
+                                    }
+                                ],
+                                "tags": [
+                                    {
+                                        "tag": "component",
+                                        "value": "pacemaker"
+                                    },
+                                    {
+                                        "tag": "pacemaker resource",
+                                        "value": "{#PCMK_RESOURCE}"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "ac0787df65be4cb5a121e7fbdfecc5d1",
+                                "name": "Pacemaker: [{#PCMK_RESOURCE}] Resource managed",
+                                "key": "pacemaker.resource.managed[{#PCMK_RESOURCE}]",
+                                "description": "Indicates whether the resource is managed by Pacemaker.\n\nPossible values:\n0 - UNMANAGED\n1 - MANAGED\n\nUnmanaged resources are not actively controlled by Pacemaker.",
+                                "valuemap": {
+                                    "name": "pacemaker.resource.managed"
+                                },
+                                "preprocessing": [
+                                    {
+                                        "type": "DISCARD_UNCHANGED_HEARTBEAT",
+                                        "parameters": [
+                                            "30m"
+                                        ]
+                                    }
+                                ],
+                                "tags": [
+                                    {
+                                        "tag": "component",
+                                        "value": "pacemaker"
+                                    },
+                                    {
+                                        "tag": "pacemaker resource",
+                                        "value": "{#PCMK_RESOURCE}"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "fd0359434cb24724a0ce3320e06d389f",
+                                "name": "Pacemaker: [{#PCMK_RESOURCE}] Resource node",
+                                "key": "pacemaker.resource.node[{#PCMK_RESOURCE}]",
+                                "value_type": "CHAR",
+                                "description": "Returns the hostname of the cluster node currently hosting the resource.\n\nThe value changes when Pacemaker migrates or moves the resource to another cluster node.\n\nAn empty value indicates that no hosting node is available.",
+                                "valuemap": {
+                                    "name": "pacemaker.resource.online"
+                                },
+                                "preprocessing": [
+                                    {
+                                        "type": "DISCARD_UNCHANGED_HEARTBEAT",
+                                        "parameters": [
+                                            "30m"
+                                        ]
+                                    }
+                                ],
+                                "tags": [
+                                    {
+                                        "tag": "component",
+                                        "value": "pacemaker"
+                                    },
+                                    {
+                                        "tag": "pacemaker resource",
+                                        "value": "{#PCMK_RESOURCE}"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "a7828d235f68408885554466b04abadb",
+                                "name": "Pacemaker: [{#PCMK_RESOURCE}] Resource online",
+                                "key": "pacemaker.resource.online[{#PCMK_RESOURCE}]",
+                                "description": "Indicates whether the Pacemaker resource is currently active.\n\nPossible values:\n0 - OFFLINE\n1 - ONLINE\n\nThe value is based on the active attribute reported by crm_mon, or inferred from the resource role when the active attribute is unavailable.",
+                                "valuemap": {
+                                    "name": "pacemaker.resource.online"
+                                },
+                                "preprocessing": [
+                                    {
+                                        "type": "DISCARD_UNCHANGED_HEARTBEAT",
+                                        "parameters": [
+                                            "30m"
+                                        ]
+                                    }
+                                ],
+                                "tags": [
+                                    {
+                                        "tag": "component",
+                                        "value": "pacemaker"
+                                    },
+                                    {
+                                        "tag": "pacemaker resource",
+                                        "value": "{#PCMK_RESOURCE}"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "ee275704783244a1ab8bf5dc54b9eb86",
+                                "name": "Pacemaker: [{#PCMK_RESOURCE}] Resource state",
+                                "key": "pacemaker.resource.state[{#PCMK_RESOURCE}]",
+                                "value_type": "CHAR",
+                                "description": "Returns the current operational role or state of the Pacemaker resource.\n\nPossible values include:\nStarted, Stopped, Master, Slave, Promoted, Unpromoted, Failed.\n\nThe value is obtained from the resource status reported by crm_mon.",
+                                "valuemap": {
+                                    "name": "pacemaker.resource.online"
+                                },
+                                "preprocessing": [
+                                    {
+                                        "type": "DISCARD_UNCHANGED_HEARTBEAT",
+                                        "parameters": [
+                                            "30m"
+                                        ]
+                                    }
+                                ],
+                                "tags": [
+                                    {
+                                        "tag": "component",
+                                        "value": "pacemaker"
+                                    },
+                                    {
+                                        "tag": "pacemaker resource",
+                                        "value": "{#PCMK_RESOURCE}"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "6ca6575031764ba7943a95114c74af90",
+                                "name": "Pacemaker: [{#PCMK_RESOURCE}] Resource uptime",
+                                "key": "pacemaker.resource.uptime[{#PCMK_RESOURCE}]",
+                                "units": "s",
+                                "description": "Returns the resource uptime in seconds.\n\nCalculated from the last successful start or migrate_from operation recorded on the current hosting node.\n\nReturns 0 when the resource is inactive or the start timestamp is unavailable.",
+                                "preprocessing": [
+                                    {
+                                        "type": "DISCARD_UNCHANGED_HEARTBEAT",
+                                        "parameters": [
+                                            "30m"
+                                        ]
+                                    }
+                                ],
+                                "tags": [
+                                    {
+                                        "tag": "component",
+                                        "value": "pacemaker"
+                                    },
+                                    {
+                                        "tag": "pacemaker resource",
+                                        "value": "{#PCMK_RESOURCE}"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "macros": [
+                    {
+                        "macro": "{$PACEMAKER.NODE.MATCHES}",
+                        "value": ".*"
+                    },
+                    {
+                        "macro": "{$PACEMAKER.NODE.NOT_MATCHES}",
+                        "value": "CHANGED_IF_NEEDED"
+                    }
+                ],
+                "valuemaps": [
+                    {
+                        "uuid": "bbd35484223d4eca9e88f8271f60fc6b",
+                        "name": "pacemaker.availability",
+                        "mappings": [
+                            {
+                                "value": "1",
+                                "newvalue": "available"
+                            },
+                            {
+                                "value": "0",
+                                "newvalue": "unavailable"
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "d77116279051417581370815cb98d942",
+                        "name": "pacemaker.dc.status",
+                        "mappings": [
+                            {
+                                "value": "0",
+                                "newvalue": "no"
+                            },
+                            {
+                                "value": "1",
+                                "newvalue": "yes"
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "a332dac11b4a4daf98d56eb049f6ea2f",
+                        "name": "pacemaker.node.status",
+                        "mappings": [
+                            {
+                                "value": "0",
+                                "newvalue": "offline"
+                            },
+                            {
+                                "value": "1",
+                                "newvalue": "online"
+                            },
+                            {
+                                "value": "2",
+                                "newvalue": "standby"
+                            },
+                            {
+                                "value": "3",
+                                "newvalue": "maintenance"
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "d39a48b69b0f455aa85334dcbd6b6184",
+                        "name": "pacemaker.quorum",
+                        "mappings": [
+                            {
+                                "value": "0",
+                                "newvalue": "no quorum"
+                            },
+                            {
+                                "value": "1",
+                                "newvalue": "quorum"
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "ff9cc546792947bdb8f53057de4cf48a",
+                        "name": "pacemaker.resource.failed",
+                        "mappings": [
+                            {
+                                "value": "0",
+                                "newvalue": "ok"
+                            },
+                            {
+                                "value": "1",
+                                "newvalue": "failed"
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "693d5c06c6ad4d50bb6b3516141af0ab",
+                        "name": "pacemaker.resource.managed",
+                        "mappings": [
+                            {
+                                "value": "0",
+                                "newvalue": "unmanaged"
+                            },
+                            {
+                                "value": "1",
+                                "newvalue": "managed"
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "4d8f1acfc6a441ed8907a9d415206f4c",
+                        "name": "pacemaker.resource.online",
+                        "mappings": [
+                            {
+                                "value": "0",
+                                "newvalue": "offline"
+                            },
+                            {
+                                "value": "1",
+                                "newvalue": "online"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}
